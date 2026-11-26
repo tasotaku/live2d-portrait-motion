@@ -12,7 +12,7 @@ const capture=byId("capture");
 const modes=[...document.querySelectorAll("[data-motion]")];
 const notes={
   shift:"両足を置いたまま、左右の脚に交互に体重を乗せます。",
-  elbow:"画面左の前腕と手が肘を支点に回ります。",
+  elbow:"画面左の肘を支点に、前腕と手が胴の前に上がります。",
   walk:"カメラが横から追従します。床の目盛りで足の接地を確認できます。",
 };
 

@@ -46,9 +46,9 @@ export function shiftPose(elapsed) {
   return { sway, legs, hip:[443.5+82*sway,817+12.5*Math.abs(sway)], tilt:-.027*sway };
 }
 
-// AI_NOTE: The shaft rotates at one elbow pivot; the hand follows the forearm without scaling.
+// AI_NOTE: Negative rotation brings the screen-left forearm in front of the torso around the fixed elbow.
 export function elbowAngle(elapsed) {
-  return sample([[0,0],[.46,0],[1.59,101],[2.34,101],[3.45,0],[4.4,0]],elapsed)*Math.PI/180;
+  return sample([[0,0],[.46,0],[1.59,-118],[2.34,-118],[3.45,0],[4.4,0]],elapsed)*Math.PI/180;
 }
 
 // AI_NOTE: Rotate around a shared pivot used for the visible art and the guide overlay.

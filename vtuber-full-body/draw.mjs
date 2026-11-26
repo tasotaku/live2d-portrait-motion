@@ -162,12 +162,13 @@ function buildFront(original) {
     paint(mode, t) {
       if (mode==="elbow") {
         const angle=elbowAngle(t);
+        const flexed=Math.abs(angle)>=.003;
         gl.uniform2fv(joints,front.hip.flatMap((point,i)=>[point,front.knee[i],front.ankle[i]].flatMap(([x,y])=>[x,y])));
         gl.uniform3f(root,443.5,817,0);
         gl.uniform1f(flex,angle);
-        gl.uniform1i(part,angle<.003?0:1);
+        gl.uniform1i(part,flexed?1:0);
         draw();
-        if (angle>=.003) {
+        if (flexed) {
           gl.uniform1i(part,2);
           draw(false);
         }
