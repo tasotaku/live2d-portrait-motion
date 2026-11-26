@@ -1,6 +1,8 @@
 // AI_NOTE: Both demos use the same grid and alpha handling while supplying their own deformation shaders.
-export function createMesh(canvas, { size, vertex, fragment, images, samplers, rows = Math.ceil(48 * size[1] / size[0]) }) {
-  const gl = canvas.getContext("webgl2", { alpha: true, premultipliedAlpha: false, antialias: true });
+export function createMesh(canvas, {
+  size, vertex, fragment, images, samplers, rows = Math.ceil(48 * size[1] / size[0]), premultipliedAlpha = false,
+}) {
+  const gl = canvas.getContext("webgl2", { alpha: true, premultipliedAlpha, antialias: true });
   if (!gl) throw new Error("WebGL 2 を利用できません");
   const program = gl.createProgram();
   for (const [type, source] of [[gl.VERTEX_SHADER, vertex], [gl.FRAGMENT_SHADER, fragment]]) {
@@ -30,7 +32,7 @@ export function createMesh(canvas, { size, vertex, fragment, images, samplers, r
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
   gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
   for (const [i, image] of images.entries()) {
-    if (image.naturalWidth!==size[0] || image.naturalHeight!==size[1]) {
+    if ((image.naturalWidth ?? image.width) !== size[0] || (image.naturalHeight ?? image.height) !== size[1]) {
       throw new Error("画像のピクセル寸法が設定と一致しません");
     }
     const texture = gl.createTexture();
@@ -47,9 +49,9 @@ export function createMesh(canvas, { size, vertex, fragment, images, samplers, r
   return {
     gl,
     uniform: name => gl.getUniformLocation(program, name),
-    // AI_NOTE: Clear the previous silhouette before drawing any new deformation.
-    draw() {
-      gl.clear(gl.COLOR_BUFFER_BIT);
+    // AI_NOTE: Clear the previous pose on the first pass, preserving layers on subsequent passes.
+    draw(clear = true) {
+      if (clear) gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLES, 0, grid.length / 2);
     },
   };

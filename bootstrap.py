@@ -40,6 +40,7 @@ VTUBER_FILES = tuple(
 ) + tuple(
     Path("vtuber-full-body") / name for name in (
         "index.html", "preview.mjs", "draw.mjs", "motion.mjs", "portrait.png",
+        "walk-profile.png", "walk-profile-under-arm.png",
     )
 )
 MODULES = (RIG / "motion-keys.mjs",) + tuple(
