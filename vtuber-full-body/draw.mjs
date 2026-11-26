@@ -76,9 +76,20 @@ void main() {
     float upper=turnBetween(elbow-bind[0],joints[1]-joints[0]);
     float lower=turnBetween(bind[2]-elbow,joints[2]-joints[1]);
     float turn=atan(sin(lower-upper),cos(lower-upper));
-    float blend=smoothstep(-42.,56.,p.y-elbow.y);
+    vec2 local=p-elbow;
+    float blend=smoothstep(-42.,56.,local.y);
     // AI_NOTE: Blend the two rotations about their shared pivot to preserve the rest radius at the elbow.
-    p=joints[1]+rotate(p-elbow,upper+turn*blend);
+    vec2 bent=rotate(local,upper+turn*blend);
+    vec2 forearm=normalize(bind[2]-elbow);
+    vec2 inside=vec2(forearm.y,-forearm.x)*-sign(turn);
+    vec2 normal=rotate(inside,lower);
+    // AI_NOTE: At deep flexion the inside of the proximal forearm fills towards the upper arm.
+    float deepBend=smoothstep(radians(70.),radians(103.),abs(turn));
+    float nearElbow=smoothstep(-19.,9.,local.y)*(1.-smoothstep(38.,65.,local.y));
+    float innerFlesh=smoothstep(2.,25.,dot(local,inside));
+    float pinch=dot(local,inside)-dot(bent,normal);
+    float lift=clamp(pinch*.82,0.,17.)*deepBend*nearElbow*innerFlesh;
+    p=joints[1]+bent+normal*lift;
   } else {
     vec2 upper=bone(p,bind[0],bind[1],joints[0],joints[1]);
     vec2 lower=bone(p,bind[1],bind[2],joints[1],joints[2]);
