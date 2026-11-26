@@ -12,7 +12,7 @@ const capture=byId("capture");
 const modes=[...document.querySelectorAll("[data-motion]")];
 const notes={
   shift:"両足を置いたまま、左右の脚に交互に体重を乗せます。",
-  elbow:"画面左の肘を支点に、前腕と手が胴の前に上がります。",
+  elbow:"横から、肘を支点に前腕と手が前へ上がる様子を見られます。",
   walk:"カメラが横から追従します。床の目盛りで足の接地を確認できます。",
 };
 
@@ -21,7 +21,7 @@ let time=0;
 let running=true;
 let lastFrame;
 
-// AI_NOTE: Wait for both aligned profile plates before building the walking rig.
+// AI_NOTE: Wait for the aligned profile plates shared by the arm and walking motions.
 async function load(name) {
   const image=new Image();
   image.src=name;

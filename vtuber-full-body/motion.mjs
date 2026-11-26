@@ -11,10 +11,6 @@ export const front = {
   hip: [[347,817,0],[540,817,0]],
   knee: [[344,1221,23],[541,1221,23]],
   ankle: [[339,1650,0],[549,1650,0]],
-  shoulder: [305,395],
-  elbow: [272,617],
-  wrist: [220,833],
-  hand: [216,944],
 };
 
 // AI_NOTE: Find the knee on the intersection of two fixed-length bones pointing towards the bend direction.
@@ -46,11 +42,6 @@ export function shiftPose(elapsed) {
   return { sway, legs, hip:[443.5+82*sway,817+12.5*Math.abs(sway)], tilt:-.027*sway };
 }
 
-// AI_NOTE: Negative rotation brings the screen-left forearm in front of the torso around the fixed elbow.
-export function elbowAngle(elapsed) {
-  return sample([[0,0],[.46,0],[1.59,-118],[2.34,-118],[3.45,0],[4.4,0]],elapsed)*Math.PI/180;
-}
-
 // AI_NOTE: Rotate around a shared pivot used for the visible art and the guide overlay.
 export function rotateAt(point, pivot, angle) {
   const x = point[0]-pivot[0], y = point[1]-pivot[1];
@@ -63,6 +54,19 @@ export const side = {
   shoulder:[385,476], elbow:[387,618], wrist:[426,842],
   heel:[348,1744], toe:[552,1744], floor:1744,
 };
+
+// AI_NOTE: Profile shows the elbow's flexion plane and keeps the upper arm fixed.
+export function profileElbowPose(elapsed) {
+  const angle = sample([[0,0],[.46,0],[1.59,-103],[2.34,-103],[3.45,0],[4.4,0]],elapsed)*Math.PI/180;
+  const wrist = rotateAt(side.wrist,side.elbow,angle);
+  return {
+    hip:side.hip,
+    lean:0,
+    legs:[{ joints:[side.hip,side.knee,side.ankle], pivot:side.heel, x:0, lift:0, angle:0 }],
+    arms:[[side.shoulder,side.elbow,wrist]],
+  };
+}
+
 export const walkingStride = 824;
 const stance = .63;
 
