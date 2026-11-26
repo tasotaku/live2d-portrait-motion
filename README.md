@@ -4,6 +4,8 @@
 
 [正面VTuberの試作](vtuber-front/)では、新しい立ち絵の待機・会話・手動ポーズを切り替えられます。この試作は WebGL 2 で動くブラウザ版で、待機中の呼吸、瞬き、姿勢の変化を別々に動かしています。制作素材と調整方法は [VTuber試作のREADME](vtuber-front/README.md) にあります。
 
+[VTuber全身の比較](vtuber-full-body/)では、足を床に置いたまま体重を移したり、軽く屈伸したりする動きを、胸と髪の揺れの有無で見比べられます。
+
 ## 別のPCで起動する
 
 Git、Python 3.8 以上、WebGL が使えるブラウザ、CDN へのインターネット接続が必要です。Windows の PowerShell で次を実行します。

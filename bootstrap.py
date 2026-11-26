@@ -34,8 +34,12 @@ PAGES = (Path("index.html"),) + tuple(
 VTUBER = Path("vtuber-front")
 VTUBER_FILES = tuple(
     VTUBER / name for name in (
-        "index.html", "preview.mjs", "draw.mjs", "pose.mjs",
+        "index.html", "preview.mjs", "draw.mjs", "pose.mjs", "mesh.mjs",
         "portrait.png", "closed-eyes.png", "open-mouth.png",
+    )
+) + tuple(
+    Path("vtuber-full-body") / name for name in (
+        "index.html", "preview.mjs", "draw.mjs", "motion.mjs", "portrait.png",
     )
 )
 MODULES = (RIG / "motion-keys.mjs",) + tuple(

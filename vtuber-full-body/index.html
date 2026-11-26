@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>VTuber 全身の動き</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font: 16px/1.5 "Yu Gothic UI", "Hiragino Sans", system-ui, sans-serif;
+      background: #10141d;
+      color: #f2f6fa;
+      --panel: #1a2230;
+      --border: #3a495d;
+      --accent: #a6e5dc;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 62rem; margin: auto; padding: clamp(.8rem, 3vw, 1.75rem); }
+    nav { display: flex; justify-content: space-between; gap: .75rem; }
+    a { color: var(--accent); text-underline-offset: .22em; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    h1 { margin: .45rem 0 .85rem; font-size: clamp(1.5rem, 4vw, 2.15rem); line-height: 1.25; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .55rem .85rem;
+      padding: .65rem;
+      border: 1px solid var(--border);
+      border-radius: .75rem;
+      background: var(--panel);
+    }
+    .modes, .playback { display: flex; flex-wrap: wrap; gap: .35rem; }
+    button {
+      min-height: 2.4rem;
+      padding: .3rem .65rem;
+      border: 1px solid #53667d;
+      border-radius: .5rem;
+      background: #222e40;
+      color: inherit;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:enabled:hover { border-color: var(--accent); }
+    button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #101e29; }
+    button:disabled { cursor: default; }
+    label { display: flex; align-items: center; gap: .4rem; cursor: pointer; }
+    input { accent-color: var(--accent); }
+    #zoom { width: 1.05rem; height: 1.05rem; margin: 0; }
+    .timeline { display: flex; align-items: center; gap: .65rem; margin: .55rem 0 .65rem; }
+    .timeline label { flex: none; font-size: .85rem; }
+    #seek { flex: 1; min-width: 0; margin: 0; cursor: ew-resize; }
+    .stages { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(.35rem, 2vw, .9rem); }
+    .stage {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: .8rem;
+      background: radial-gradient(ellipse at 50% 38%, #374c60, transparent 75%), #172131;
+    }
+    .stage h2 {
+      margin: 0;
+      padding: .45rem .3rem;
+      border-bottom: 1px solid var(--border);
+      font-size: clamp(.83rem, 2.7vw, 1rem);
+      font-weight: 600;
+      text-align: center;
+    }
+    .stage:last-child h2 { color: var(--accent); }
+    .viewport { display: grid; justify-items: center; }
+    canvas { display: block; width: auto; height: auto; max-width: 100%; max-height: min(59vh, 42rem); }
+    #status { min-height: 1.35em; margin: .5rem 0 0; color: #becbd8; font-size: .85rem; }
+    @media (max-width: 33rem) {
+      .controls { gap: .4rem .55rem; padding: .5rem; font-size: .88rem; }
+      button { padding-inline: .5rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <nav aria-label="関連ページ">
+      <a href="../">デモ一覧</a>
+      <a href="./portrait.png">静止画</a>
+    </nav>
+    <h1>VTuber 全身の動き</h1>
+    <div class="controls">
+      <div class="modes" role="group" aria-label="動きの種類">
+        <button type="button" data-motion="idle" aria-pressed="false">待機</button>
+        <button type="button" data-motion="shift" aria-pressed="true">体重移動</button>
+        <button type="button" data-motion="bend" aria-pressed="false">軽い屈伸</button>
+      </div>
+      <div class="playback" role="group" aria-label="再生操作">
+        <button type="button" id="pause">一時停止</button>
+        <button type="button" id="restart">最初から</button>
+      </div>
+      <label><input type="checkbox" id="zoom">上半身を拡大</label>
+    </div>
+    <div class="timeline">
+      <label for="seek">再生位置</label>
+      <input type="range" id="seek" aria-label="再生位置" min="0" max="1" step=".001" value="0">
+    </div>
+    <div class="stages">
+      <section class="stage" aria-labelledby="base-heading">
+        <h2 id="base-heading">体の動きのみ</h2>
+        <div class="viewport"><canvas id="base" width="440" height="610" role="img" aria-labelledby="base-heading"></canvas></div>
+      </section>
+      <section class="stage" aria-labelledby="secondary-heading">
+        <h2 id="secondary-heading">胸と髪の揺れあり</h2>
+        <div class="viewport"><canvas id="secondary" width="440" height="610" role="img" aria-labelledby="secondary-heading"></canvas></div>
+      </section>
+    </div>
+    <p id="status" role="status">立ち絵を読み込み中</p>
+    <button type="button" id="capture" hidden>動きの確認フレームを保存</button>
+  </main>
+  <script type="module" src="./preview.mjs"></script>
+</body>
+</html>

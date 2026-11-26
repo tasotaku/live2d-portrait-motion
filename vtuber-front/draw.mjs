@@ -1,3 +1,5 @@
+import { createMesh } from "./mesh.mjs";
+
 const portrait = [1145, 1374];
 
 const vertex = `#version 300 es
@@ -102,59 +104,16 @@ void main() {
 
 // AI_NOTE: Mesh deformation keeps the head, facial details and neck on one continuous surface.
 export function createAvatar(canvas, images) {
-  const gl = canvas.getContext("webgl2", { alpha: true, premultipliedAlpha: false, antialias: true });
-  if (!gl) throw new Error("WebGL 2 を利用できません");
-  const program = gl.createProgram();
-  for (const [type, source] of [[gl.VERTEX_SHADER, vertex], [gl.FRAGMENT_SHADER, fragment]]) {
-    const shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader));
-    gl.attachShader(program, shader);
-  }
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
-  gl.useProgram(program);
+  const mesh = createMesh(canvas, {
+    size: portrait, vertex, fragment, images, samplers: ["neutral", "closed", "spoken"], rows: 62,
+  });
+  const face = mesh.uniform("face");
+  const body = mesh.uniform("body");
 
-  const grid = [];
-  const cols = 48, rows = 62;
-  for (let row=0; row<rows; row++) {
-    const y0 = row*portrait[1]/rows, y1 = (row+1)*portrait[1]/rows;
-    for (let col=0; col<cols; col++) {
-      const x0 = col*portrait[0]/cols, x1 = (col+1)*portrait[0]/cols;
-      grid.push(x0,y0, x1,y0, x0,y1, x1,y0, x1,y1, x0,y1);
-    }
-  }
-  const buffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(grid), gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(0);
-  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-  gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
-  const samplers = ["neutral","closed","spoken"];
-  for (const [i, image] of images.entries()) {
-    if (image.naturalWidth!==portrait[0] || image.naturalHeight!==portrait[1]) {
-      throw new Error("表情素材のピクセル寸法が揃っていません");
-    }
-    const texture = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0 + i);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.uniform1i(gl.getUniformLocation(program,samplers[i]),i);
-  }
-  const face = gl.getUniformLocation(program,"face");
-  const body = gl.getUniformLocation(program,"body");
-  gl.viewport(0,0,canvas.width,canvas.height);
-
-  // AI_NOTE: A fresh draw clears old silhouettes, so the alpha edges never leave trails.
+  // AI_NOTE: All visible parts share the same pose at the moment of drawing.
   return pose => {
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniform4f(face,pose.eyeL,pose.eyeR,pose.mouth,pose.form);
-    gl.uniform4f(body,pose.roll,pose.nod,pose.breath,pose.hair);
-    gl.drawArrays(gl.TRIANGLES,0,grid.length/2);
+    mesh.gl.uniform4f(face, pose.eyeL, pose.eyeR, pose.mouth, pose.form);
+    mesh.gl.uniform4f(body, pose.roll, pose.nod, pose.breath, pose.hair);
+    mesh.draw();
   };
 }
