@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live2Dの口パク比較</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #18131d; color: #f8eff8; font: 15px/1.6 system-ui, sans-serif; }
+    main { width: min(100% - 40px, 900px); margin: 0 auto; padding: 26px 0 34px; }
+    h1 { margin: 8px 0 3px; font-size: clamp(24px, 4vw, 34px); line-height: 1.2; }
+    h2 { margin: 0; font-size: clamp(13px, 2.6vw, 17px); line-height: 1.4; }
+    p { margin: 0; }
+    .intro, #status, output { color: #d9c6dd; }
+    a { color: #e9bde1; text-underline-offset: .26em; }
+    #body-mode { margin-inline-start: 1em; }
+    .portraits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+    .portrait { margin: 0; border: 1px solid #634f68; border-radius: 14px; overflow: hidden; background: #2d2233; }
+    .portrait h2 { padding: 9px 13px; }
+    .portrait:nth-child(2) h2 { background: #49304a; }
+    .model { aspect-ratio: var(--model-ratio, 430 / 346); background: #382b40; }
+    canvas { display: block; width: 100%; }
+    #caption { min-height: 2.6em; display: grid; place-items: center; padding-top: 4px;
+      font-size: clamp(14px, 3vw, 18px); text-align: center; }
+    .playback, .vowels { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+    .playback label { margin-left: auto; }
+    button, select { border-radius: 8px; border: 1px solid #79607e; background: #38283f; color: inherit;
+      font: inherit; padding: 6px 11px; min-height: 36px; }
+    button, select { cursor: pointer; }
+    button:disabled, select:disabled { opacity: .45; cursor: default; }
+    #play { background: #e8bee2; color: #241629; border-color: #e8bee2; font-weight: 650; }
+    button[aria-pressed="true"] { background: #705174; border-color: #e8bee2; }
+    button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid #f3c5ed; outline-offset: 3px; }
+    .seek { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; margin: 6px 0 10px; }
+    input[type="range"] { width: 100%; margin: 0; accent-color: #e8bee2; cursor: ew-resize; }
+    output { min-width: 9ch; text-align: right; font-variant-numeric: tabular-nums; }
+    .vowels { border-top: 1px solid #56435b; padding-top: 10px; }
+    .vowels[hidden] { display: none; }
+    .vowels button { min-width: 40px; }
+    #status { min-height: 1.5em; margin-top: 7px; font-size: 13px; }
+    @media (max-width: 550px) {
+      main { width: calc(100% - 24px); padding: 13px 0 20px; }
+      .portraits { margin-top: 13px; gap: 7px; }
+      .portrait h2 { padding: 7px 8px; }
+    }
+  </style>
+</head>
+<body>
+<main data-body-model="painted-performance.model3.json">
+  <a href="./">元の口パクデモ</a>
+  <a id="body-mode" href="?body=1">頭と上半身の動きを比較</a>
+  <h1>Live2Dの口パク比較</h1>
+  <p class="intro">左右で同じ台詞・開き具合。右は母音に合わせて口の横幅も変わります。</p>
+  <div class="portraits">
+    <section class="portrait" aria-labelledby="basic-title">
+      <h2 id="basic-title">開閉だけ</h2>
+      <div id="basic" class="model"></div>
+    </section>
+    <section class="portrait" aria-labelledby="vowel-title">
+      <h2 id="vowel-title">開閉 ＋ 母音の形</h2>
+      <div id="shaped" class="model"></div>
+    </section>
+  </div>
+  <p id="caption"></p>
+  <div class="playback">
+    <button type="button" id="play" disabled>会話を再生</button>
+    <button type="button" id="pause" disabled>一時停止</button>
+    <button type="button" id="restart" disabled>最初から</button>
+    <label for="speed">速度</label>
+    <select id="speed" disabled>
+      <option value="1">等速</option>
+      <option value=".65">ゆっくり</option>
+    </select>
+  </div>
+  <div class="seek">
+    <input id="seek" type="range" aria-label="会話の再生位置" min="0" max="5.75" step=".01" value="0" disabled>
+    <output id="time" for="seek">0.0 / 5.8秒</output>
+  </div>
+  <div class="vowels" role="group" aria-label="母音を止めて見比べる">
+    <span>母音で止める</span>
+    <button type="button" data-vowel="あ" aria-pressed="false" disabled>あ</button>
+    <button type="button" data-vowel="い" aria-pressed="false" disabled>い</button>
+    <button type="button" data-vowel="う" aria-pressed="false" disabled>う</button>
+    <button type="button" data-vowel="え" aria-pressed="false" disabled>え</button>
+    <button type="button" data-vowel="お" aria-pressed="false" disabled>お</button>
+  </div>
+  <p id="status" role="status">モデルを読み込み中…</p>
+  <button type="button" id="capture" hidden disabled>母音の比較画像を保存</button>
+  <button type="button" id="capture-body" hidden disabled>動きの確認フレームを保存</button>
+  <audio id="dialogue" src="conversation-voice.wav" preload="auto"></audio>
+</main>
+<script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
+<script type="module" src="./vowel-comparison.mjs"></script>
+</body>
+</html>

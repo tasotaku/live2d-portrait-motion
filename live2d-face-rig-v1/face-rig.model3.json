@@ -1,0 +1,19 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "face-rig.moc3",
+    "Textures": [
+      "face-rig.2048/texture_00.png"
+    ],
+    "DisplayInfo": "face-rig.cdi3.json",
+    "Motions": {
+      "Demo": [
+        {
+          "File": "demo.motion3.json",
+          "FadeInTime": 0,
+          "FadeOutTime": 0
+        }
+      ]
+    }
+  }
+}

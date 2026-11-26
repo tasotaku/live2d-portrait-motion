@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": { "assemble": "node assemble.mjs" },
+  "dependencies": { "ag-psd": "30.1.0", "sharp": "0.34.5" }
+}

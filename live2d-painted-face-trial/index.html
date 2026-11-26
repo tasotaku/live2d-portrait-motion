@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live2D · 一枚絵の瞬きと口パク</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #17131d; color: #f6eef9; margin: 0; font: 15px/1.5 system-ui,sans-serif; }
+  main { min-height: 100dvh; max-width: 1020px; margin: auto; padding: 28px; display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(185px,256px); gap: 26px; align-items: center; }
+  #stage { position: relative; overflow: hidden; border-radius: 14px; background: #33263b; aspect-ratio: 550/569; }
+  #caption { position: absolute; inset: auto 0 4%; margin: 0; text-align: center; pointer-events: none; }
+  #caption span { display: inline-block; padding: .25em .65em; border-radius: 6px; background: #17131de6; }
+  #caption span:empty { display: none; }
+  canvas { width: 100%; display: block; }
+  h1 { font-size: 22px; margin: 0 0 16px; }
+  label { display: flex; gap: 6px; justify-content: space-between; margin-top: 15px; }
+  input { width: 100%; accent-color: #dea8db; }
+  button { color: #f6eef9; background: #47324e; font: inherit; padding: 6px 11px; border: 1px solid #795880;
+    border-radius: 7px; cursor: pointer; }
+  button:disabled { opacity: .45; cursor: default; }
+  .buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+  #status { margin-bottom: 0; font-size: 13px; color: #d2bdd7; }
+  a { color: #e9bde1; text-underline-offset: .25em; }
+  @media (max-width: 540px) { main { display: block; padding: 15px; } section { padding: 16px 0; } }
+</style>
+<main>
+  <div id="stage"><p id="caption"><span></span></p></div>
+  <section>
+    <h1>一枚絵の瞬きと口パク</h1>
+    <div class="buttons">
+      <button id="talk" disabled>会話を再生</button><button id="play" disabled>動作確認</button>
+      <button id="pause" disabled>一時停止</button>
+    </div>
+    <label for="left">左目（画面右）<output for="left">100%</output></label>
+    <input id="left" type="range" min="0" max="100" value="100" disabled>
+    <label for="right">右目（画面左）<output for="right">100%</output></label>
+    <input id="right" type="range" min="0" max="100" value="100" disabled>
+    <label for="mouth">口の開き<output for="mouth">0%</output></label>
+    <input id="mouth" type="range" min="0" max="100" value="0" disabled>
+    <div class="buttons" id="mouth-presets">
+      <button data-mouth="0" disabled>閉じ口</button><button data-mouth="30" disabled>少し開く</button>
+      <button data-mouth="66" disabled>半開き</button><button data-mouth="100" disabled>全開</button>
+    </div>
+    <p id="status" role="status">読み込み中…</p>
+    <p><a href="./vowel-comparison.html">母音で口の形を変える版と比較</a></p>
+    <button id="capture" hidden>確認フレームを保存</button>
+  </section>
+</main>
+<script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
+<script type="module" src="./face-preview.mjs"></script>
+</html>
