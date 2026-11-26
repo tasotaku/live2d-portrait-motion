@@ -62,22 +62,30 @@ uniform vec3 root;
 uniform vec4 shoe; // contact pivot X, phase-relative X, lift, pitch
 uniform int part;
 ${geometry}
+float turnBetween(vec2 before,vec2 after) {
+  return atan(before.x*after.y-before.y*after.x,dot(before,after));
+}
 void main() {
   uv=rest/vec2(887.,1774.);
   vec2 p=rest;
   vec2 torso=rotate(p-vec2(420.,820.),root.z)+root.xy;
   if (part==0) {
     p=torso;
+  } else if (part==2) {
+    vec2 elbow=bind[1];
+    float upper=turnBetween(elbow-bind[0],joints[1]-joints[0]);
+    float lower=turnBetween(bind[2]-elbow,joints[2]-joints[1]);
+    float turn=atan(sin(lower-upper),cos(lower-upper));
+    float blend=smoothstep(-42.,56.,p.y-elbow.y);
+    // AI_NOTE: Blend the two rotations about their shared pivot to preserve the rest radius at the elbow.
+    p=joints[1]+rotate(p-elbow,upper+turn*blend);
   } else {
     vec2 upper=bone(p,bind[0],bind[1],joints[0],joints[1]);
     vec2 lower=bone(p,bind[1],bind[2],joints[1],joints[2]);
     vec2 limb=mix(upper,lower,smoothstep(bind[1].y-42.,bind[1].y+56.,p.y));
-    if (part==1) {
-      vec2 foot=rotate(p-vec2(shoe.x,1744.),shoe.w)+vec2(shoe.x+shoe.y,1744.-shoe.z);
-      limb=mix(limb,foot,smoothstep(1600.,1670.,p.y));
-      limb=mix(torso,limb,smoothstep(795.,940.,p.y));
-    }
-    p=limb;
+    vec2 foot=rotate(p-vec2(shoe.x,1744.),shoe.w)+vec2(shoe.x+shoe.y,1744.-shoe.z);
+    limb=mix(limb,foot,smoothstep(1600.,1670.,p.y));
+    p=mix(torso,limb,smoothstep(795.,940.,p.y));
   }
   gl_Position=screen(p);
 }`;
