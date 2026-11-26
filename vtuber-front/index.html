@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>正面VTuber 試作</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font: 16px/1.5 "Yu Gothic UI", "Hiragino Sans", system-ui, sans-serif;
+      background: #10141d;
+      color: #f2f6fa;
+      --panel: #1a2230;
+      --border: #3a495d;
+      --muted: #becbd8;
+      --accent: #a6e5dc;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 74rem; margin: auto; padding: clamp(1rem, 3vw, 2rem); }
+    a { color: var(--accent); text-underline-offset: .22em; }
+    :focus-visible { outline: 2px solid #96eee2; outline-offset: 3px; }
+    h1 { margin: .5rem 0 1rem; font-size: clamp(1.55rem, 4vw, 2.25rem); line-height: 1.2; }
+    h2, legend { font-size: 1rem; font-weight: 700; }
+    h2 { margin: 0 0 .65rem; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 21rem); gap: 1rem; align-items: start; }
+    .stage {
+      overflow: hidden;
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      background: radial-gradient(ellipse at 50% 38%, #374c60, transparent 73%),
+                  linear-gradient(140deg, #1a293a, #171e30 70%);
+    }
+    .viewport { display: grid; justify-items: center; padding: .45rem .75rem 0; }
+    canvas { display: block; width: auto; height: auto; max-width: 100%; max-height: min(67vh, 46rem); }
+    figcaption {
+      min-height: 3rem;
+      padding: .65rem .9rem;
+      border-top: 1px solid #44566a;
+      background: #161f2e;
+      text-align: center;
+      font-weight: 600;
+    }
+    .controls { display: grid; gap: .75rem; }
+    .card {
+      min-width: 0;
+      margin: 0;
+      padding: .95rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: .8rem;
+      background: var(--panel);
+    }
+    fieldset.card { padding-top: .55rem; }
+    legend { padding: 0 .35rem; }
+    .modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+    button {
+      min-height: 2.5rem;
+      padding: .4rem .7rem;
+      border: 1px solid #53667d;
+      border-radius: .5rem;
+      background: #222e40;
+      color: inherit;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:enabled:hover { border-color: var(--accent); }
+    button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #101e29; }
+    .options { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem .85rem; margin-top: .7rem; }
+    .options label { display: flex; align-items: center; gap: .35rem; font-size: .9rem; cursor: pointer; }
+    .options button { margin-left: auto; }
+    input { accent-color: #8bd5ca; }
+    input[type="checkbox"] { width: 1.05rem; height: 1.05rem; margin: 0; }
+    .slider { display: grid; grid-template-columns: 4.8rem minmax(0, 1fr); align-items: center; gap: .45rem; min-height: 2.2rem; font-size: .95rem; }
+    input[type="range"] { width: 100%; margin: 0; cursor: ew-resize; }
+    .vowels { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .35rem; margin-top: .6rem; }
+    .vowels button { padding-inline: .2rem; }
+    fieldset:disabled .slider, fieldset:disabled .vowels { opacity: .58; }
+    button:disabled, input:disabled { cursor: default; }
+    #message { min-height: 1.3em; margin: 0; color: var(--muted); font-size: .83rem; }
+    #capture { justify-self: start; }
+    @media (max-width: 39rem) {
+      .workspace { grid-template-columns: minmax(0, 1fr); }
+      canvas { max-height: min(53vh, 34rem); }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="../">デモ一覧</a>
+    <h1>正面VTuber 試作</h1>
+    <div class="workspace">
+      <figure class="stage">
+        <div class="viewport">
+          <canvas id="avatar" width="760" height="884" role="img" aria-label="正面を向いたVTuberの立ち絵"></canvas>
+        </div>
+        <figcaption id="caption" aria-live="polite"></figcaption>
+      </figure>
+      <section class="controls" aria-label="立ち絵の操作">
+        <div class="card">
+          <h2>再生モード</h2>
+          <div class="modes">
+            <button type="button" id="idle" aria-pressed="true" aria-controls="avatar">待機</button>
+            <button type="button" id="talk" aria-pressed="false" aria-controls="avatar">会話</button>
+            <button type="button" id="manual" aria-pressed="false" aria-controls="pose">手動</button>
+          </div>
+          <div class="options">
+            <label><input id="still" type="checkbox">待機の揺れを止める</label>
+            <button type="button" id="restart">最初から</button>
+          </div>
+        </div>
+        <fieldset id="pose" class="card" disabled>
+          <legend>手動で表情を確認</legend>
+          <label class="slider" for="eyeL">左の目 <input type="range" id="eyeL" min="0" max="1" step=".01" value="1"></label>
+          <label class="slider" for="eyeR">右の目 <input type="range" id="eyeR" min="0" max="1" step=".01" value="1"></label>
+          <label class="slider" for="mouth">口の開き <input type="range" id="mouth" min="0" max="1" step=".01" value="0"></label>
+          <label class="slider" for="form">口の横幅 <input type="range" id="form" min="-1" max="1" step=".01" value="0"></label>
+          <label class="slider" for="tilt">頭の傾き <input type="range" id="tilt" min="-8" max="8" step=".1" value="0"></label>
+          <div class="vowels" role="group" aria-label="母音の口形">
+            <button type="button" data-vowel="あ">あ</button>
+            <button type="button" data-vowel="い">い</button>
+            <button type="button" data-vowel="う">う</button>
+            <button type="button" data-vowel="え">え</button>
+            <button type="button" data-vowel="お">お</button>
+          </div>
+        </fieldset>
+        <p id="message" role="status">立ち絵を読み込み中</p>
+        <button type="button" id="capture" hidden>動きの確認フレームを保存</button>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="./preview.mjs"></script>
+</body>
+</html>

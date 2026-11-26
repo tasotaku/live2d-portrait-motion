@@ -31,6 +31,13 @@ PAGES = (Path("index.html"),) + tuple(
     for folder in PORTRAITS
     for name in ("index.html", "vowel-comparison.html")
 )
+VTUBER = Path("vtuber-front")
+VTUBER_FILES = tuple(
+    VTUBER / name for name in (
+        "index.html", "preview.mjs", "draw.mjs", "pose.mjs",
+        "portrait.png", "closed-eyes.png", "open-mouth.png",
+    )
+)
 MODULES = (RIG / "motion-keys.mjs",) + tuple(
     PORTRAITS[0] / name
     for name in (
@@ -82,10 +89,11 @@ def manifest_files(manifest):
 
 
 def runtime_files():
-    require_files((*PAGES, *MODULES, *MANIFESTS))
+    # AI_NOTE: The VTuber browser rig has its own expression images and uses the same motion keys.
+    require_files((*PAGES, *MODULES, *MANIFESTS, *VTUBER_FILES))
     assets = {path for manifest in MANIFESTS for path in manifest_files(manifest)}
     require_files(sorted(assets))
-    return (*PAGES, *MODULES, *MANIFESTS, *sorted(assets))
+    return (*PAGES, *MODULES, *MANIFESTS, *sorted(assets), *VTUBER_FILES)
 
 
 def install_audio():
